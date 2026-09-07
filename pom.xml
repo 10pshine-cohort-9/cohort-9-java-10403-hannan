@@ -28,6 +28,16 @@
 	</scm>
 	<properties>
 		<java.version>17</java.version>
+
+		<!-- SonarQube: picked up automatically by `mvn sonar:sonar`, no separate
+		     sonar-project.properties needed to scan this module on its own. -->
+		<sonar.projectKey>cms-backend</sonar.projectKey>
+		<sonar.projectName>Contact Management System - Backend</sonar.projectName>
+		<sonar.sourceEncoding>UTF-8</sonar.sourceEncoding>
+		<sonar.java.binaries>${project.build.directory}/classes</sonar.java.binaries>
+		<sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+		<sonar.junit.reportPaths>${project.build.directory}/surefire-reports</sonar.junit.reportPaths>
+		<sonar.exclusions>**/DTO/**,**/SupportingEnum/**,**/CmsApplication.java</sonar.exclusions>
 	</properties>
 	<dependencies>
 		<!-- Web (REST controllers, embedded Tomcat) -->
@@ -59,6 +69,42 @@
 			<groupId>com.mysql</groupId>
 			<artifactId>mysql-connector-j</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+
+		<!-- Flyway (schema migrations, versions managed by spring-boot-starter-parent) -->
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.flywaydb</groupId>
+			<artifactId>flyway-mysql</artifactId>
+		</dependency>
+
+		<!-- JWT -->
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-api</artifactId>
+			<version>0.11.5</version>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-impl</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>io.jsonwebtoken</groupId>
+			<artifactId>jjwt-jackson</artifactId>
+			<version>0.11.5</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- H2 - in-memory DB, test scope only, never used at runtime -->
+		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Lombok (reduces boilerplate: getters/setters/constructors) -->
@@ -130,6 +176,30 @@
 								</path>
 							</annotationProcessorPaths>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Instruments tests to produce target/site/jacoco/jacoco.xml, which
+			     SonarQube reads for line/branch coverage. JaCoCo 0.8.12+ supports
+			     Java 21 bytecode (this project targets Java 17 but runs on JDK 21). -->
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<version>0.8.12</version>
+				<executions>
+					<execution>
+						<id>prepare-agent</id>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>report</id>
+						<phase>test</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
